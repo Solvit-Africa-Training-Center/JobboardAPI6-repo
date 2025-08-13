@@ -1,5 +1,22 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
+
+class User(AbstractUser):
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=15, blank=True)
+    user_type = models.CharField(max_length=20, choices=[
+        ('job_seeker', 'Job Seeker'),
+        ('employer', 'Employer'),
+    ])
+    is_verified = models.BooleanField(default=False)
+
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'user_type']
 
 class Company(models.Model):
     name = models.CharField(max_length=200)
