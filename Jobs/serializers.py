@@ -6,57 +6,129 @@ from .models import (
     User,
     Job,
     Application,
-    Userprofile
+    UserProfile,
+    SavedJob
 )
 
-
+#Registration serializers
 class RegistrationSerializer(serializers.ModelSerializer):
-    password=serializers.CharField(write_only=True, min_length=8)
-    confirm_password=serializers.CharField(write_only=True, min_length=8)
+    password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True, min_length=8)
 
     class Meta:
-        models=User
-        fields= ['first_name', 'last_name','email','password', 'confirm_password','role']
-
-    def validate(self,data):
-        if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Password don't match")
-        return data
-        
-    def create(self, validate_data):
-            validate_data.pop('confirm_password')
-            password= validate_data.pop('confirm_password')
-            user= User(**validate_data)
-            user.set_password(password)
-            user.save()
-
-        #LoginSerializers
-
-class Login(serializers.ModelSerializer):
-    email=serializers.EmailField()
-    password=serializers.CharField(write_only=True)
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'role']
 
     def validate(self, data):
-        email= data.get('email', None)
-        password=data.get('password', None)
-        if not email or not password:
-            raise serializers.ValidationError(' password and email mismatch')
-        user=authenticate(username=email, password=password)
-        if not user:
-            raise serializers.ValidationError("please enter valid  credential")
-        if not user.is_active:
-            raise serializers.ValidationError('Please verify your account to be activated ')
-        refresh=RefreshToken.for_user(user)
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords don't match")
+        return data
+        
+    def create(self, validated_data):
+        validated_data.pop('confirm_password')
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
 
+
+class Login(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+        if not email or not password:
+            raise serializers.ValidationError('Both email and password are required')
+
+        user = authenticate(username=email, password=password)
+        if not user:
+            raise serializers.ValidationError("Invalid credentials")
+        if not user.is_active:
+            raise serializers.ValidationError('Please verify your account before logging in')
+
+        refresh = RefreshToken.for_user(user)
         return {
-            'email':user.email,
+            'email': user.email,
             'access': str(refresh.access_token),
             'refresh': str(refresh),
         }
-    
-# class ApplicationSerializer(serializers.ModelSerializer):
 
-        
-        
 
-    
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'first_name', 'last_name', 'role']
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['user', 'resume', 'bio']
+
+
+class JobSerializer(serializers.ModelSerializer):
+    recruiter = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Job
+        fields = [
+            'id', 'title', 'description', 'requirements',
+            'company_name', 'location', 'salary',
+            'category', 'job_type', 'deadline',
+            'created_at', 'recruiter'
+        ]
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        if user.role != User.Role.RECRUITER:
+            raise serializers.ValidationError("Only recruiters can post jobs.")
+        validated_data['recruiter'] = user
+        return super().create(validated_data)
+
+
+class ApplicationSerializer(serializers.ModelSerializer):
+    candidate = UserSerializer(read_only=True)
+    job_id = serializers.PrimaryKeyRelatedField(
+        queryset=Job.objects.all(), source='job', write_only=True
+    )
+    job = JobSerializer(read_only=True)
+
+    class Meta:
+        model = Application
+        fields = [
+            'id', 'candidate', 'job_id', 'job',
+            'cover_letter', 'cv', 'status', 'applied_at'
+        ]
+        read_only_fields = ['id', 'candidate', 'job', 'status', 'applied_at']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        if user.role != User.Role.CANDIDATE:
+            raise serializers.ValidationError("Only candidates can apply to jobs.")
+        validated_data['candidate'] = user
+        return super().create(validated_data)
+
+class SavedJobSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)  # show user email
+    job = JobSerializer(read_only=True)  # nested job details
+    job_id = serializers.PrimaryKeyRelatedField(
+        queryset=Job.objects.all(), source='job', write_only=True
+    )
+
+    class Meta:
+        model = SavedJob
+        fields = ['id', 'user', 'job', 'job_id', 'saved_at']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user'] = user
+
+        # prevent duplicate save
+        job = validated_data['job']
+        if SavedJob.objects.filter(user=user, job=job).exists():
+            raise serializers.ValidationError("You have already saved this job.")
+
+        return super().create(validated_data)
