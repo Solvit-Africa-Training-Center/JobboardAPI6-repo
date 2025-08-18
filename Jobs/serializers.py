@@ -6,8 +6,8 @@ from .models import (
     User,
     Job,
     Application,
-    UserProfile,
-    SavedJob
+    Userprofile,
+    SavedJob,
 )
 
 #Registration serializers
@@ -33,7 +33,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
-class Login(serializers.Serializer):
+class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
@@ -65,7 +65,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserProfile
+        model = Userprofile
         fields = ['user', 'resume', 'bio']
 
 
@@ -132,3 +132,30 @@ class SavedJobSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You have already saved this job.")
 
         return super().create(validated_data)
+    
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims (optional)
+        token['email'] = user.email
+        token['first_name'] = user.first_name
+        token['last_name'] = user.last_name
+        token['role'] = user.role
+
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        # Add extra fields to the response
+        data['user'] = {
+            'id': self.user.id,
+            'email': self.user.email,
+            'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
+            'role': self.user.role,
+        }
+
+        return data

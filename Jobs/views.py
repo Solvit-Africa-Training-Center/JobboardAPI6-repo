@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from rest_framework import viewsets,filters
-from .models import JOb,Application,User
+from .models import Job,Application,User
 from .serializers import JobSerializer
-from Jobs import IsCandidate, IsAdminOrRecruiter, IsOwnerOrAdmin
+from .permissions import IsCandidate, IsAdminOrRecruiter, IsOwnerorAdmin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .serializers import UserRegistrationSerializer, LoginSerializer,ApplicationSerializer
+from .serializers import RegistrationSerializer, LoginSerializer,ApplicationSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from .serializers import CustomTokenObtainPairSerializer
@@ -16,7 +16,7 @@ from rest_framework.pagination import PageNumberPagination
 
 class UserRegistrationView(APIView):
     def post(self,request):
-        serializer=UserRegistrationSerializer(data=request.data)
+        serializer=RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user=serializer.save()
             return Response(
@@ -37,7 +37,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 #Rolebased views based   on their permissions on systems for all recruiter  candidate and admin 
 class JobViewSet(viewsets.ModelViewSet):
-    queryset=JOb.objects.all()
+    queryset=Job.objects.all()
     serializer_class= JobSerializer
 
     def get_permissions(self):
@@ -52,7 +52,7 @@ class JobViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             permission_class= {IsAuthenticated,IsAdminOrRecruiter}
         elif self.action in ['Update', 'partial_update', 'destroy']:
-            permission_class = [IsAuthenticated, IsOwnerOrAdmin]
+            permission_class = [IsAuthenticated, IsOwnerorAdmin]
         else:
             permission_class = [IsAuthenticated]
         return [permission() for permission in permission_class]
@@ -119,8 +119,8 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         #logic for checking if job is still exist in order to avoid double applying
 
         try:
-            job=JOb.objects.get(id=job_id)
-        except JOb.DoesNotExist:
+            job=Job.objects.get(id=job_id)
+        except Job.DoesNotExist:
             return Response({"detail": "JOB NOT Found."}, status=status.HTTP_404_NOT_FOUND)
         if Application.objects.filter(job=job, candidate=user).exists():
             return Response({"detail": "You have already applied for this job."}, status=status.HTTP_400_BAD_REQUEST)
