@@ -5,7 +5,7 @@ from .models import(
     Job,
     Application,
     SavedJob,
-    UserProfile
+    Userprofile
 )
 
 # Register your models here.
@@ -14,13 +14,13 @@ class UserAdmin(UserAdmin):
     list_display= ['email', 'first_name', 'role', 'is_staff']
     list_filter= ['role', 'is_active']
     search_fields= ['email', 'first_name', 'last_name']
-    orderind= ['email']
+    ordering= ['email']
 
     fieldsets= (
         (None, {'fields':('email', 'password')}),
-        ('personal Info', {'fields':('first_name', 'last_name', 'role')})
+        ('personal Info', {'fields':('first_name', 'last_name', 'role')}),
         ('permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Important Dates', {'fields': ('last_login')}),
+        ('Important Dates', {'fields': ('last_login',)}),
     )
     add_fieldsets = (
         (None, {
@@ -30,7 +30,7 @@ class UserAdmin(UserAdmin):
     )
     admin.site.register(User,UserAdmin)
 
-@admin.site.register(Job)
+@admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
     list_display=['id','title','description', 'company_name','Salary','requirements', 'recruiter', 'category', 'job_type', 'created_at', 'deadline']
     search_fields= ['title', 'company_name']
@@ -55,7 +55,7 @@ JobAdmin.inlines= [ApplicationInline]
 
 
 class UserProfileInline(admin.TabularInline):
-    model=UserProfile
+    model=Userprofile
     can_delete=False
     verbose_name_plural= 'Profile'
 
@@ -70,7 +70,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
-@admin.register(UserProfile)
+@admin.register(Userprofile)
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'resume', 'bio')
     search_fields = ('user__email', 'bio')
