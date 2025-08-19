@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets,filters
-from .models import Job,Application,User,Userprofile
-from .serializers import JobSerializer
+from .models import Job,Application,User,Userprofile,SavedJob
+from .serializers import JobSerializer,SavedJobSerializer
 from .permissions import IsCandidate, IsAdminOrRecruiter, IsOwnerorAdmin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -171,3 +171,22 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         """
         serializer.save(user=self.request.user)
 
+class SavedJobViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing saved jobs
+    """
+    serializer_class = SavedJobSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Only return jobs saved by the logged-in user
+        return SavedJob.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        # Custom delete with friendly message
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"detail": "Job removed from saved list."}, status=status.HTTP_204_NO_CONTENT)
