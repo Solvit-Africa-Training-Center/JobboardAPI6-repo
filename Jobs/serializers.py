@@ -76,7 +76,7 @@ class JobSerializer(serializers.ModelSerializer):
         model = Job
         fields = [
             'id', 'title', 'description', 'requirements',
-            'company_name', 'location', 'salary',
+            'company_name', 'location', 'salary',  # <-- match model field
             'category', 'job_type', 'deadline',
             'created_at', 'recruiter'
         ]
@@ -87,7 +87,6 @@ class JobSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Only recruiters can post jobs.")
         validated_data['recruiter'] = user
         return super().create(validated_data)
-
 
 class ApplicationSerializer(serializers.ModelSerializer):
     candidate = UserSerializer(read_only=True)

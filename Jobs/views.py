@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from rest_framework import viewsets,filters
-from .models import Job,Application,User
+from .models import Job,Application,User,Userprofile
 from .serializers import JobSerializer
 from .permissions import IsCandidate, IsAdminOrRecruiter, IsOwnerorAdmin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .serializers import RegistrationSerializer, LoginSerializer,ApplicationSerializer
+from .serializers import RegistrationSerializer,UserProfileSerializer, LoginSerializer,ApplicationSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from .serializers import CustomTokenObtainPairSerializer
@@ -50,7 +50,7 @@ class JobViewSet(viewsets.ModelViewSet):
         if self.action in ['list','retrieve']:
             permission_class= [IsAuthenticated]
         elif self.action == 'create':
-            permission_class= {IsAuthenticated,IsAdminOrRecruiter}
+            permission_class= [IsAuthenticated,IsAdminOrRecruiter]
         elif self.action in ['Update', 'partial_update', 'destroy']:
             permission_class = [IsAuthenticated, IsOwnerorAdmin]
         else:
@@ -58,7 +58,7 @@ class JobViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_class]
     def get_serializer_context(self):
         context= super().get_serializer_context()
-        context.update({"request": self.context})
+        context.update({"request": self.request})
         return context
     def perform_create(self, serializer):
         #This automaticall Assign the recruiter(JobOwner to) as the logged in user
@@ -146,4 +146,28 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             return Response({"detail": "You can only update applications for your own jobs."}, status=status.HTTP_403_FORBIDDEN)
 
         return super().update(request, *args, **kwargs)
+    
+
+#Userprofile views
+
+class UserProfileViewSet(viewsets.ModelViewSet):
+    queryset = Userprofile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]  # Only authenticated users can access
+
+    def get_queryset(self):
+        """
+        Users can only see their own profile
+        Admins can see all profiles (optional)
+        """
+        user = self.request.user
+        if user.role == 'admin':
+            return Userprofile.objects.all()
+        return Userprofile.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        """
+        Automatically assign the logged-in user as the owner of the profile
+        """
+        serializer.save(user=self.request.user)
 

@@ -64,7 +64,7 @@ class Job(models.Model):
     requirements=models.TextField()
     company_name=models.CharField(max_length=40)
     location=models.CharField(max_length=100)
-    Salary=models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
+    salary=models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
     category=models.CharField(max_length=40  ,choices=JOBCATEGORY)
     job_type= models.CharField(max_length=30, choices=JOBTYPE)
     recruiter= models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='jobs')

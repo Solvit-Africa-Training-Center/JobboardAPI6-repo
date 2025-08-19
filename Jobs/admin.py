@@ -11,7 +11,7 @@ from .models import(
 # Register your models here.
 class UserAdmin(UserAdmin):
     model= User
-    list_display= ['email', 'first_name', 'role', 'is_staff']
+    list_display= ['id','email', 'first_name','last_name', 'role', 'is_staff']
     list_filter= ['role', 'is_active']
     search_fields= ['email', 'first_name', 'last_name']
     ordering= ['email']
@@ -32,7 +32,7 @@ class UserAdmin(UserAdmin):
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    list_display=['id','title','description', 'company_name','Salary','requirements', 'recruiter', 'category', 'job_type', 'created_at', 'deadline']
+    list_display=['id','title','description', 'company_name','salary','requirements', 'recruiter', 'category', 'job_type', 'created_at', 'deadline']
     search_fields= ['title', 'company_name']
     list_filter= ['category', 'job_type', 'created_at']
     auto_complete= ['recruiter']

@@ -116,26 +116,23 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
-#configuring REstframework
-REST_FRAMEWORK= {
+REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # Add this
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
-    'DEFAULT_PERMISSION_CLASS':[
+    'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
 }
-REST_FRAMEWORK_SIMPLEJWT= {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
-    'AUTH-HEADER_TYPES': ('Bearer',),
-
+    'AUTH_HEADER_TYPES': ('Bearer',),  # fix the dash to underscore
 }
-
-
 AUTH_USER_MODEL= 'Jobs.User'
 
