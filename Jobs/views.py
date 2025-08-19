@@ -176,6 +176,7 @@ class SavedJobViewSet(viewsets.ModelViewSet):
     ViewSet for managing saved jobs
     """
     serializer_class = SavedJobSerializer
+    queryset = SavedJob.objects.all()
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -190,3 +191,4 @@ class SavedJobViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response({"detail": "Job removed from saved list."}, status=status.HTTP_204_NO_CONTENT)
+    
