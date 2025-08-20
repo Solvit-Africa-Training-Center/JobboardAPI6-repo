@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'drf_yasg',
     'rest_framework',
     'rest_framework_simplejwt',
     'Jobs',
@@ -136,3 +136,13 @@ SIMPLE_JWT = {
 }
 AUTH_USER_MODEL= 'Jobs.User'
 
+
+'''configuring email stuffs'''
+
+EMAIL_BACKEND = 'django.core.mail.backend.smtp.EmailBackend'
+EMAIL_HOST= 'smtp.gmail.com' #can be changed depends on your smtp
+EMAIL_PORT= 587
+EMAIL_USER_TLS= True 
+EMAIL_HOST_USER= 'myemail@gmail.com'
+EMAIL_HOST_PASSWORD= 'Myapp password' #we put here the generated password from app 
+DEFAULT_FROM_EMAIL= EMAIL_HOST_USER

@@ -65,24 +65,6 @@ class JobViewSet(viewsets.ModelViewSet):
         serializer.save(recruiter=self.request.user)
         
     
-    
-class ApplicationViewSet(viewsets.ModelViewSet):
-    queryset=Application
-    serializer_class=ApplicationSerializer
-    permission_classes= [IsAuthenticated, IsCandidate]
-
-    def get_queryset(self):
-        user=self.request.user()
-        if user.role== 'CANDIDATE':
-            return self.queryset.filter(candidate=user)
-        if user.role== ['RECRUITER','ADMIN']:
-            return self.queryset.filter(job_recruiter=user)
-        return Application.objects.none
-    def get_serializer_context(self):
-        # Pass request to serializer for role validation and user assignment
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context
 
 #Applications stuffs
 
@@ -112,7 +94,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
         if user.role != User.Role.CANDIDATE:
             return Response ({'details': "only candidates can apply for jobs"}, status=status.HTTP_403_FORBIDDEN)
-        job_id= request.data.get(job_id)
+        job_id= request.data.get('job_id')
         if not job_id:
             return Response({"detail": "JOB ID is required"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -129,12 +111,12 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         application= Application.objects.create(
             job=job,
             candidate=user,
-            cover_letter=request.user.data.get("cover_letter", "")
+            cover_letter=request.data.get("cover_letter", "")
         )
-        serializer= self.get-serializer(application)
+        serializer= self.get_serializer(application)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     def update(self, request, *args, **kwargs):
-        application= self.get_objects()
+        application= self.get_object()
         user=request.user
 
          # Only recruiters (job owner) or admins can update status
