@@ -1,2 +1,44 @@
 
 venv/ 
+db.sqlite3
+__pycache__/
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+ENV/
+env/
+.venv/
+
+# Django database
+db.sqlite3
+*.sqlite3
+
+# Django migrations (optional: you can keep if collaborating)
+*/migrations/*.py
+!*/migrations/__init__.py
+
+# Logs
+*.log
+
+# Media / static files (if generated locally)
+media/
+staticfiles/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Env variables
+.env
+*.env
