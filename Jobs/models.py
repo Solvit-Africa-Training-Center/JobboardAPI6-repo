@@ -87,11 +87,11 @@ class Application(models.Model):
     candidate=models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='application')
     cover_letter=models.TextField()
     cv=models.FileField(upload_to='resume/',null=True)
-    status=models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    status=models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     applied_at=models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"self.candidate.email ->{self.job.title}"
+        return f"{self.candidate.email} -> {self.job.title}"
     
 class Userprofile(models.Model):
     user=models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, related_name='profile')
