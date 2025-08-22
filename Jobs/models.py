@@ -69,6 +69,8 @@ class Job(models.Model):
     job_type= models.CharField(max_length=30, choices=JOBTYPE)
     recruiter= models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='jobs')
     created_at= models.DateTimeField(auto_now_add=True)
+    posted_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
     deadline=models.DateTimeField(blank=True, null=False)
     
     def __str__(self):
