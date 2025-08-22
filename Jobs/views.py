@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets,filters
 from .models import Job,Application,User,Userprofile,SavedJob
 from .serializers import JobSerializer,SavedJobSerializer
-from .permissions import IsCandidate, IsAdminOrRecruiter, IsOwnerorAdmin
+from .permissions import  IsAdminOrRecruiter, IsOwnerorAdmin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .serializers import RegistrationSerializer,UserProfileSerializer, LoginSerializer,ApplicationSerializer
@@ -11,10 +11,14 @@ from rest_framework.response import Response
 from .serializers import CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny
 # Create your views here.
 
 
 class UserRegistrationView(APIView):
+    queryset= User.objects.all()
+    serializer_class= RegistrationSerializer
+    permission_classes= [AllowAny]
     def post(self,request):
         serializer=RegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -85,7 +89,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         if user.role == User.Role.ADMIN:
             return Application.objects.all()
         elif user.role== User.Role.RECRUITER:
-            return Application.objects.filter(posted_by=user)
+            return Application.objects.filter(job__posted_by=user)
         elif user.role== User.Role.CANDIDATE:
             return Application.objects.filter(candidate=user)
         return Application.objects.none()
