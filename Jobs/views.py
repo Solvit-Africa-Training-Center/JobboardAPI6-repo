@@ -12,6 +12,7 @@ from .serializers import CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
+from .task import send_welcome_email, send_application_confirmation_email
 # Create your views here.
 
 
@@ -23,6 +24,8 @@ class UserRegistrationView(APIView):
         serializer=RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user=serializer.save()
+            send_welcome_email.delay(user.email)
+
             return Response(
                 {"message": "User registered successfully."},
                 status=status.HTTP_201_CREATED
@@ -117,6 +120,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             candidate=user,
             cover_letter=request.data.get("cover_letter", "")
         )
+        send_application_confirmation_email.delay(user.email, job.title, job.company_name)
         serializer= self.get_serializer(application)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     def update(self, request, *args, **kwargs):

@@ -139,10 +139,19 @@ AUTH_USER_MODEL= 'Jobs.User'
 
 '''configuring email stuffs'''
 
-EMAIL_BACKEND = 'django.core.mail.backend.smtp.EmailBackend'
-EMAIL_HOST= 'smtp.gmail.com' #can be changed depends on your smtp
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST= 'smtp.gmail.com' 
 EMAIL_PORT= 587
-EMAIL_USER_TLS= True 
-EMAIL_HOST_USER= 'myemail@gmail.com'
-EMAIL_HOST_PASSWORD= 'Myapp password' #we put here the generated password from app 
+EMAIL_USE_TLS= True 
+EMAIL_HOST_USER= 'cyotero26@gmail.com'
+EMAIL_HOST_PASSWORD= 'vdymnehshdijvflp' 
 DEFAULT_FROM_EMAIL= EMAIL_HOST_USER
+
+# redis settings for celery
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
